@@ -19,14 +19,14 @@ class SpriteSheet():
         # Initialize animation state for the given id if not already present
         if id not in animation_users:
             animation_users[id] = [start_frame, current_time]
-    
+
         frame_number, previous_time = animation_users[id]
     
         # Update frame if enough time has passed
         if current_time - previous_time >= wait:
             frame_number += 1
             previous_time = current_time
-    
+
         # Loop back to start_frame if frame_number exceeds end_frame
         if frame_number >= end_frame:
             frame_number = start_frame
