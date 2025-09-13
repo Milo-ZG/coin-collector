@@ -156,9 +156,10 @@ while run:
     pac_mask = pygame.mask.from_surface(player)
 
     #bliting everything onto the screen
+    screen.blit(player, (x, y))
     for coin in coins:
         screen.blit(coin.image, coin.pos)
-    screen.blit(player, (x, y))
+    
     screen.blit(maze, (((screen_width / 2) - (maze.get_width() / 2)), 0))
 
     # Collision detection with coin
