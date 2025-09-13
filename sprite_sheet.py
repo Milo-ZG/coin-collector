@@ -1,6 +1,5 @@
 import pygame
 current_time = pygame.time.get_ticks()
-previous_time = current_time
 class SpriteSheet():
     def __init__(self, image):
         self.sheet = image
