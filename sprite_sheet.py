@@ -16,9 +16,7 @@ class SpriteSheet():
         current_time = pygame.time.get_ticks()
     
         # Initialize animation state for the given id if not already present
-        try:
-            self.frame_number, self.previous_time
-        except NameError:
+        if not hasattr(self, 'frame_number'):
             self.frame_number = start_frame
             self.previous_time = current_time
     
