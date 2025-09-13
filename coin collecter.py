@@ -9,6 +9,7 @@ score = 0
 dir = "left"
 x = screen_width/2
 y = screen_height/2
+BLACK = (0, 0, 0)
 
 coin_positions = []
 coins = []
@@ -16,28 +17,42 @@ for i in range(0, 4):
     coin_pos = randint(0, screen_width - 100), randint(0, screen_height - 100)
     coin_positions.append(coin_pos)
 
-BLACK = (0, 0, 0)
+def scale_by(sprite, scale):
+    return pygame.transform.scale(sprite, ((sprite.get_size()[0] * scale), (sprite.get_size()[1] * scale)))
 
 #text engine
 my_font = pygame.font.SysFont("Arial", 50)
 def draw_text(text, font, text_col, x, y, scale):
     img = font.render(text, True, text_col)
-    img = pygame.transform.scale(img, (img.get_size()[0] * scale, img.get_size()[1] * scale))
+    img = scale_by(img, scale)
     screen.blit(img, (x, y))
 
-def scale_by(sprite, scale):
-    return pygame.transform.scale(sprite, ((sprite.get_size()[0] * scale), (sprite.get_size()[1] * scale)))
-
+# coin class
 class dot:
     def __init__(self, pos):
         self.pos = pos
-        self.image = coin_sheet.get_image(coin_sheet.animate('coin', 0, 6, 250), 133.5, 118, 0.7, BLACK)
-        self.image = scale_by(self.image, 0.5)
-        self.mask = pygame.mask.from_surface(coin_sheet.get_image(coin_sheet.animate('coin', 0, 6, 250), 133.5, 118, 0.7, BLACK))
+        self.image = coin_sheet.get_image(coin_sheet.animate('coin', 0, 6, 250), 133.5, 118, 0.35, BLACK)
+        self.mask = pygame.mask.from_surface(coin_sheet.get_image(coin_sheet.animate('coin', 0, 6, 250), 133.5, 118, 0.35, BLACK))
         self.size = self.image.get_size()
-    
-    def blit(self):
-        return self.image, self.mask
+
+#defining sprites and masks
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("Coin Collector")
+
+maze = pygame.image.load("images/pac_maze.png")
+maze = scale_by(maze, 3)
+maze_mask = pygame.mask.from_surface(maze)
+
+coin_sheet_image = pygame.image.load("images/coin_sheet_no_bg.png").convert_alpha()
+pac_sheet_image = pygame.image.load("images/pacman_sprite_sheet.png").convert_alpha()
+coin_sheet = sprite_sheet.SpriteSheet(coin_sheet_image)
+pac_sheet = sprite_sheet.SpriteSheet(pac_sheet_image)
+
+for coin in coin_positions:
+    coins.append(dot(coin))
+
+player = pac_sheet.get_image(pac_sheet.animate('pacman', 0, 3, 100), 219.3333, 196, 0.7, BLACK)
+pac_mask = pygame.mask.from_surface(player)
     
 
 
@@ -101,27 +116,12 @@ def handle_movement(x, y, dir, player, screen_width, screen_height):
 
     return x, y, dir
 
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Coin Collector")
 
-maze = pygame.image.load("images/pac_maze.png")
-maze = scale_by(maze, 3)
-maze_mask = pygame.mask.from_surface(maze)
 
-coin_sheet_image = pygame.image.load("images/coin_sheet_no_bg.png").convert_alpha()
-pac_sheet_image = pygame.image.load("images/pacman_sprite_sheet.png").convert_alpha()
-coin_sheet = sprite_sheet.SpriteSheet(coin_sheet_image)
-pac_sheet = sprite_sheet.SpriteSheet(pac_sheet_image)
-
-for coin in coin_positions:
-    coins.append(dot(coin))
-
-player = pac_sheet.get_image(pac_sheet.animate('pacman', 0, 3, 100), 219.3333, 196, 0.7, BLACK)
-pac_mask = pygame.mask.from_surface(player)
-
+#game loop
 run = True
 while run:
-    screen.fill((0, 0, 0))
+    screen.fill(BLACK)
 
     coins = []
     for coin in coin_positions:
@@ -155,7 +155,7 @@ while run:
 
     pac_mask = pygame.mask.from_surface(player)
 
-    
+    #bliting everything onto the screen
     for coin in coins:
         screen.blit(coin.image, coin.pos)
     screen.blit(player, (x, y))
@@ -168,8 +168,10 @@ while run:
             coin_positions[coins.index(coin)] = coin_pos
             score += 1
 
+    # Score display
     draw_text(str(score), my_font, (255, 255, 255), 10, 10, 2)
 
+    # Event handler
     key = pygame.key.get_pressed()
     if key[pygame.K_ESCAPE]:
         run = False
