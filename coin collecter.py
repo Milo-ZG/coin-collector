@@ -9,7 +9,13 @@ score = 0
 dir = "left"
 x = screen_width/2
 y = screen_height/2
-coin_pos = randint(0, screen_width - 100), randint(0, screen_height - 100) 
+
+coin_positions = []
+coins = []
+for i in range(0, 4):
+    coin_pos = randint(0, screen_width - 100), randint(0, screen_height - 100)
+    coin_positions.append(coin_pos)
+
 BLACK = (0, 0, 0)
 
 #text engine
@@ -107,21 +113,22 @@ pac_sheet_image = pygame.image.load("images/pacman_sprite_sheet.png").convert_al
 coin_sheet = sprite_sheet.SpriteSheet(coin_sheet_image)
 pac_sheet = sprite_sheet.SpriteSheet(pac_sheet_image)
 
-coin = dot(coin_pos)
+for coin in coin_positions:
+    coins.append(dot(coin))
+
 player = pac_sheet.get_image(pac_sheet.animate('pacman', 0, 3, 100), 219.3333, 196, 0.7, BLACK)
 pac_mask = pygame.mask.from_surface(player)
-coin_mask = coin.mask
 
 run = True
 while run:
     screen.fill((0, 0, 0))
 
+    coins = []
+    for coin in coin_positions:
+        coins.append(dot(coin))
+
     # Re-defining sprites and masks for movement and animation
-    coin = dot(coin_pos)
-    wait_another_one = dot((100, 100))
-    coin_image = coin.image
     player = pac_sheet.get_image(0, 219.3333, 196, 0.2, BLACK)
-    coin_mask = coin.mask
     pac_mask = pygame.mask.from_surface(player)
     player = pac_sheet.get_image(pac_sheet.animate('pacman', 0, 3, 250), 219.3333, 196, 0.2, BLACK)
 
@@ -148,15 +155,18 @@ while run:
 
     pac_mask = pygame.mask.from_surface(player)
 
-    screen.blit(coin_image, coin_pos)
-    screen.blit(wait_another_one.image, (100, 100))  # For debugging coin mask
+    
+    for coin in coins:
+        screen.blit(coin.image, coin.pos)
     screen.blit(player, (x, y))
     screen.blit(maze, (((screen_width / 2) - (maze.get_width() / 2)), 0))
 
     # Collision detection with coin
-    if pac_mask.overlap(coin_mask, (coin_pos[0] - x, coin_pos[1] - y)):
-        coin_pos = randint(0, screen_width - coin.size[0]), randint(0, screen_height - coin.size[1])
-        score += 1
+    for coin in coins:
+        if pac_mask.overlap(coin.mask, (coin.pos[0] - x, coin.pos[1] - y)):
+            coin_pos = randint(0, screen_width - coin.size[0]), randint(0, screen_height - coin.size[1])
+            coin_positions[coins.index(coin)] = coin_pos
+            score += 1
 
     draw_text(str(score), my_font, (255, 255, 255), 10, 10, 2)
 
