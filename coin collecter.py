@@ -28,9 +28,11 @@ class dot:
         self.image = coin_sheet.get_image(coin_sheet.animate('coin', 0, 6, 250), 133.5, 118, 0.7, BLACK)
         self.image = scale_by(self.image, 0.5)
         self.mask = pygame.mask.from_surface(coin_sheet.get_image(coin_sheet.animate('coin', 0, 6, 250), 133.5, 118, 0.7, BLACK))
+        self.size = self.image.get_size()
     
     def blit(self):
         return self.image, self.mask
+    
 
 
 def handle_movement(x, y, dir, player, screen_width, screen_height):
@@ -95,27 +97,31 @@ def handle_movement(x, y, dir, player, screen_width, screen_height):
 
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Coin Collector")
+
 maze = pygame.image.load("images/pac_maze.png")
 maze = scale_by(maze, 3)
 maze_mask = pygame.mask.from_surface(maze)
+
 coin_sheet_image = pygame.image.load("images/coin_sheet_no_bg.png").convert_alpha()
 pac_sheet_image = pygame.image.load("images/pacman_sprite_sheet.png").convert_alpha()
 coin_sheet = sprite_sheet.SpriteSheet(coin_sheet_image)
 pac_sheet = sprite_sheet.SpriteSheet(pac_sheet_image)
-coin_obj = dot(coin_pos).blit()
-coin = coin_obj[0]
+
+coin = dot(coin_pos)
 player = pac_sheet.get_image(pac_sheet.animate('pacman', 0, 3, 100), 219.3333, 196, 0.7, BLACK)
 pac_mask = pygame.mask.from_surface(player)
-coin_mask = coin_obj[1]
+coin_mask = coin.mask
+
 run = True
 while run:
     screen.fill((0, 0, 0))
 
     # Re-defining sprites and masks for movement and animation
-    coin_obj = dot(coin_pos).blit()
-    coin = coin_obj[0]
+    coin = dot(coin_pos)
+    wait_another_one = dot((100, 100))
+    coin_image = coin.image
     player = pac_sheet.get_image(0, 219.3333, 196, 0.2, BLACK)
-    coin_mask = coin_obj[1]
+    coin_mask = coin.mask
     pac_mask = pygame.mask.from_surface(player)
     player = pac_sheet.get_image(pac_sheet.animate('pacman', 0, 3, 250), 219.3333, 196, 0.2, BLACK)
 
@@ -142,19 +148,20 @@ while run:
 
     pac_mask = pygame.mask.from_surface(player)
 
-    screen.blit(coin, coin_pos)
+    screen.blit(coin_image, coin_pos)
+    screen.blit(wait_another_one.image, (100, 100))  # For debugging coin mask
     screen.blit(player, (x, y))
     screen.blit(maze, (((screen_width / 2) - (maze.get_width() / 2)), 0))
 
-    # Collision detection
+    # Collision detection with coin
     if pac_mask.overlap(coin_mask, (coin_pos[0] - x, coin_pos[1] - y)):
-        coin_pos = randint(0, screen_width - coin.get_size()[0]), randint(0, screen_height - coin.get_size()[1])
+        coin_pos = randint(0, screen_width - coin.size[0]), randint(0, screen_height - coin.size[1])
         score += 1
 
     draw_text(str(score), my_font, (255, 255, 255), 10, 10, 2)
 
     key = pygame.key.get_pressed()
-    if key[pygame.K_l]:
+    if key[pygame.K_ESCAPE]:
         run = False
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
