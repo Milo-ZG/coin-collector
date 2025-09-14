@@ -6,6 +6,7 @@ pygame.init()
 # variable definitions
 screen_width, screen_height = pygame.display.get_desktop_sizes()[0]
 score = 0
+number_of_coins = 8
 dir = "left"
 x = screen_width/2
 y = screen_height/2
@@ -13,7 +14,7 @@ BLACK = (0, 0, 0)
 
 coin_positions = []
 coins = []
-for i in range(0, 4):
+for i in range(0, number_of_coins):
     coin_pos = randint(0, screen_width - 100), randint(0, screen_height - 100)
     coin_positions.append(coin_pos)
 
@@ -31,8 +32,8 @@ def draw_text(text, font, text_col, x, y, scale):
 class dot:
     def __init__(self, pos):
         self.pos = pos
-        self.image = coin_sheet.get_image(coin_sheet.animate('coin', 0, 6, 250), 133.5, 118, 0.35, BLACK)
-        self.mask = pygame.mask.from_surface(coin_sheet.get_image(coin_sheet.animate('coin', 0, 6, 250), 133.5, 118, 0.35, BLACK))
+        self.image = coin_sheet.get_image(coin_sheet.animate(0, 6, 250), 133.5, 118, 0.35, BLACK)
+        self.mask = pygame.mask.from_surface(coin_sheet.get_image(coin_sheet.animate(0, 6, 250), 133.5, 118, 0.35, BLACK))
         self.size = self.image.get_size()
 
 #defining sprites and masks
@@ -51,7 +52,7 @@ pac_sheet = sprite_sheet.SpriteSheet(pac_sheet_image)
 for coin in coin_positions:
     coins.append(dot(coin))
 
-player = pac_sheet.get_image(pac_sheet.animate('pacman', 0, 3, 100), 219.3333, 196, 0.7, BLACK)
+player = pac_sheet.get_image(pac_sheet.animate(0, 3, 100), 219.3333, 196, 0.7, BLACK)
 pac_mask = pygame.mask.from_surface(player)
     
 
@@ -130,7 +131,7 @@ while run:
     # Re-defining sprites and masks for movement and animation
     player = pac_sheet.get_image(0, 219.3333, 196, 0.2, BLACK)
     pac_mask = pygame.mask.from_surface(player)
-    player = pac_sheet.get_image(pac_sheet.animate('pacman', 0, 3, 250), 219.3333, 196, 0.2, BLACK)
+    player = pac_sheet.get_image(pac_sheet.animate(0, 3, 250), 219.3333, 196, 0.2, BLACK)
 
     # Handle movement
     x, y, dir = handle_movement(x, y, dir, player, screen_width, screen_height)
@@ -172,10 +173,20 @@ while run:
     # Score display
     draw_text(str(score), my_font, (255, 255, 255), 10, 10, 2)
 
+    #time display
+    draw_text(str(pygame.time.get_ticks()//1000), my_font, (255, 255, 255), screen_width - 150, 10, 2)
+
     # Event handler
     key = pygame.key.get_pressed()
     if key[pygame.K_ESCAPE]:
         run = False
+    if pygame.time.get_ticks()//1000 >= 60:
+        run = False
+        screen.fill(BLACK)
+        draw_text("Time's Up!", my_font, (255, 255, 255), screen_width/2 - 150, screen_height/2 - 50, 2)
+        draw_text("Final Score: " + str(score), my_font, (255, 255, 255), screen_width/2 - 200, screen_height/2 + 50, 2)
+        pygame.display.update()
+        pygame.time.delay(5000)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False

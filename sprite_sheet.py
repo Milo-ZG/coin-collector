@@ -11,7 +11,7 @@ class SpriteSheet():
         image.set_colorkey(color)
         return image
     
-    def animate(self, id, start_frame, end_frame, wait):
+    def animate(self, start_frame, end_frame, wait):
         current_time = pygame.time.get_ticks()
     
         # Initialize animation state for the given id if not already present
