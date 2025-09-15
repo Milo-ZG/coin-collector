@@ -8,7 +8,8 @@ screen_width, screen_height = pygame.display.get_desktop_sizes()[0]
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Coin Collector")
 score = 0
-cell_size = int(screen_height // 20)
+cell_size = int(screen_width // 10)
+cell_size = int((screen_width - (cell_size // 2)) // 10)
 dir = "left"
 x = screen_width/2
 y = screen_height/2
@@ -40,10 +41,9 @@ cell_y = cell_size // 2
 
 map =  [['W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W'], \
         ['W', ' ', ' ', 'C', 'C', 'C', ' ', ' ', 'P', 'W'], \
-        ['W', ' ', 'W', 'W', 'W', 'W', 'W', ' ', ' ', 'W'], \
+        ['W', ' ', 'W', 'W', 'W', 'W', 'W', ' ', 'W', 'W'], \
         ['W', ' ', 'C', 'C', ' ', ' ', 'W', 'C', 'W', 'W'], \
         ['W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W']]
-coins = []
 
 for row in map:
     for cell in row:
@@ -74,7 +74,7 @@ def draw_text(text, font, text_col, x, y, scale):
 #defining sprites and masks
 
 
-player = pac_sheet.get_image(pac_sheet.animate(0, 3, 100), 219.3333, 196, cell_size, BLACK)
+player = pac_sheet.get_image(pac_sheet.animate(0, 3, 100), 219.3333, 196, (cell_size - 2), BLACK)
 pac_mask = pygame.mask.from_surface(player)
     
 def handle_movement(x, y, dir, player, screen_width, screen_height, key):
@@ -107,13 +107,21 @@ def handle_movement(x, y, dir, player, screen_width, screen_height, key):
         if isinstance(cell, wall):
             if pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
                 if dir == "left":
-                    x += 5
+                    while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
+                        x += 1
+                    x -= 1
                 elif dir == "right":
-                    x -= 5
+                    while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
+                        x -= 1
+                    x += 1
                 elif dir == "up":
-                    y += 5
+                    while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
+                        y += 1
+                    y -= 1
                 elif dir == "down":
-                    y -= 5
+                    while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
+                        y -= 1
+                    y += 1
 
     return x, y, dir
 
@@ -136,6 +144,10 @@ while run:
     # Only update player sprite once per frame
     player = pac_sheet.get_image(pac_sheet.animate(0, 3, 250), 219.3333, 196, (cell_size - 1), BLACK)
     pac_mask = pygame.mask.from_surface(player)
+    for cell in cells:
+        if isinstance(cell, dot):
+            cell.image = coin_sheet.get_image(coin_sheet.animate(0, 6, 250), 133.5, 118, cell_size, BLACK)
+            cell.mask = pygame.mask.from_surface(coin_sheet.get_image(coin_sheet.animate(0, 6, 250), 133.5, 118, cell_size, BLACK))
 
     # Pass key to handle_movement
     x, y, dir = handle_movement(x, y, dir, player, screen_width, screen_height, key)
@@ -149,14 +161,6 @@ while run:
         player = pygame.transform.rotate(player, 90)
     elif dir == "down":
         player = pygame.transform.rotate(player, -90)
-    elif dir == "top_left":
-        player = pygame.transform.rotate(player, 135)
-    elif dir == "top_right":
-        player = pygame.transform.rotate(player, 45)
-    elif dir == "bottom_left":
-        player = pygame.transform.rotate(player, 225)
-    elif dir == "bottom_right":
-        player = pygame.transform.rotate(player, 315)
 
     pac_mask = pygame.mask.from_surface(player)
 
