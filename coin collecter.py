@@ -43,6 +43,7 @@ map =  [['W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W'], \
         ['W', ' ', ' ', 'C', 'C', 'C', ' ', ' ', 'P', 'W'], \
         ['W', ' ', 'W', 'W', 'W', 'W', 'W', ' ', 'W', 'W'], \
         ['W', ' ', 'C', 'C', ' ', ' ', 'W', 'C', 'W', 'W'], \
+        ['W', ' ', 'W', 'W', 'W', ' ', 'W', 'C', 'C', 'W'], \
         ['W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W']]
 
 for row in map:
@@ -109,19 +110,15 @@ def handle_movement(x, y, dir, player, screen_width, screen_height, key):
                 if dir == "left":
                     while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
                         x += 1
-                    x -= 1
                 elif dir == "right":
                     while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
                         x -= 1
-                    x += 1
                 elif dir == "up":
                     while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
                         y += 1
-                    y -= 1
                 elif dir == "down":
                     while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
                         y -= 1
-                    y += 1
 
     return x, y, dir
 
