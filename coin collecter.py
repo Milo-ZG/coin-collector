@@ -5,18 +5,62 @@ pygame.init()
 
 # variable definitions
 screen_width, screen_height = pygame.display.get_desktop_sizes()[0]
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("Coin Collector")
 score = 0
-number_of_coins = 8
+cell_size = int(screen_width // 10)
+cell_size = int((screen_width - (cell_size // 2)) // 10)
 dir = "left"
 x = screen_width/2
 y = screen_height/2
 BLACK = (0, 0, 0)
+coin_sheet_image = pygame.image.load("images/coin_sheet_no_bg.png").convert_alpha()
+pac_sheet_image = pygame.image.load("images/pacman_sprite_sheet.png").convert_alpha()
+coin_sheet = sprite_sheet.SpriteSheet(coin_sheet_image)
+pac_sheet = sprite_sheet.SpriteSheet(pac_sheet_image)
 
-coin_positions = []
-coins = []
-for i in range(0, number_of_coins):
-    coin_pos = randint(0, screen_width - 100), randint(0, screen_height - 100)
-    coin_positions.append(coin_pos)
+# coin class
+class dot:
+    def __init__(self, pos):
+        self.pos = pos
+        self.image = coin_sheet.get_image(coin_sheet.animate(0, 6, 250), 133.5, 118, cell_size, BLACK)
+        self.mask = pygame.mask.from_surface(coin_sheet.get_image(coin_sheet.animate(0, 6, 250), 133.5, 118, cell_size, BLACK))
+        self.size = self.image.get_size()
+
+class wall:
+    def __init__(self, pos, size):
+        self.pos = pos
+        self.image = pygame.Surface(size)
+        self.image.fill((0, 0, 255))
+        self.mask = pygame.mask.from_surface(self.image)
+        self.size = self.image.get_size()
+
+cells = []
+cell_x = cell_size // 2
+cell_y = cell_size // 2
+
+map =  [['W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W'], \
+        ['W', ' ', ' ', 'C', 'C', 'C', ' ', ' ', 'P', 'W'], \
+        ['W', ' ', 'W', 'W', 'W', 'W', 'W', ' ', 'W', 'W'], \
+        ['W', ' ', 'C', 'C', ' ', ' ', 'W', 'C', 'W', 'W'], \
+        ['W', ' ', 'W', 'W', 'W', ' ', 'W', 'C', 'C', 'W'], \
+        ['W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W']]
+
+for row in map:
+    for cell in row:
+        if cell == 'W':
+            cells.append(wall((cell_x, cell_y), (cell_size, cell_size)))
+        if cell == 'C':
+            cells.append(dot((cell_x, cell_y)))
+        if cell == 'P':
+            x = cell_x
+            y = cell_y
+        if cell == ' ':
+            pass
+        cell_x += cell_size
+    cell_x = cell_size // 2
+    cell_y += cell_size
+
 
 def scale_by(sprite, scale):
     return pygame.transform.scale(sprite, ((sprite.get_size()[0] * scale), (sprite.get_size()[1] * scale)))
@@ -28,113 +72,82 @@ def draw_text(text, font, text_col, x, y, scale):
     img = scale_by(img, scale)
     screen.blit(img, (x, y))
 
-# coin class
-class dot:
-    def __init__(self, pos):
-        self.pos = pos
-        self.image = coin_sheet.get_image(coin_sheet.animate(0, 6, 250), 133.5, 118, 0.35, BLACK)
-        self.mask = pygame.mask.from_surface(coin_sheet.get_image(coin_sheet.animate(0, 6, 250), 133.5, 118, 0.35, BLACK))
-        self.size = self.image.get_size()
-
 #defining sprites and masks
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Coin Collector")
 
-maze = pygame.image.load("images/pac_maze.png")
-maze = scale_by(maze, 3)
-maze_mask = pygame.mask.from_surface(maze)
 
-coin_sheet_image = pygame.image.load("images/coin_sheet_no_bg.png").convert_alpha()
-pac_sheet_image = pygame.image.load("images/pacman_sprite_sheet.png").convert_alpha()
-coin_sheet = sprite_sheet.SpriteSheet(coin_sheet_image)
-pac_sheet = sprite_sheet.SpriteSheet(pac_sheet_image)
-
-for coin in coin_positions:
-    coins.append(dot(coin))
-
-player = pac_sheet.get_image(pac_sheet.animate(0, 3, 100), 219.3333, 196, 0.7, BLACK)
+player = pac_sheet.get_image(pac_sheet.animate(0, 3, 100), 219.3333, 196, (cell_size - 2), BLACK)
 pac_mask = pygame.mask.from_surface(player)
     
-
-
-def handle_movement(x, y, dir, player, screen_width, screen_height):
-    key = pygame.key.get_pressed()
-    
+def handle_movement(x, y, dir, player, screen_width, screen_height, key):
     # Movement and direction
     if key[pygame.K_a] or key[pygame.K_LEFT]:
         dir = "left"
         x -= 5
-    if key[pygame.K_d] or key[pygame.K_RIGHT]:
+    elif key[pygame.K_d] or key[pygame.K_RIGHT]:
         dir = "right"
         x += 5
-    if key[pygame.K_w] or key[pygame.K_UP]:
+    elif key[pygame.K_w] or key[pygame.K_UP]:
         dir = "up"
         y -= 5
-    if key[pygame.K_s] or key[pygame.K_DOWN]:
+    elif key[pygame.K_s] or key[pygame.K_DOWN]:
         dir = "down"
         y += 5
-    if (key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_w] or key[pygame.K_UP]):
-        dir = "top_left"
-    if (key[pygame.K_a] or key[pygame.K_LEFT]) and (key[pygame.K_s] or key[pygame.K_DOWN]):
-        dir = "bottom_left"
-    if (key[pygame.K_d] or key[pygame.K_RIGHT]) and (key[pygame.K_w] or key[pygame.K_UP]):
-        dir = "top_right"
-    if (key[pygame.K_d] or key[pygame.K_RIGHT]) and (key[pygame.K_s] or key[pygame.K_DOWN]):
-        dir = "bottom_right"
 
     # Border fencing
     if x > screen_width - player.get_size()[0]:
-        x -= 5
+        x = screen_width - player.get_size()[0]
     if x < 0:
-        x += 5
+        x = 0
     if y > screen_height - player.get_size()[1]:
-        y -= 5
+        y = screen_height - player.get_size()[1]
     if y < 0:
-        y += 5
+        y = 0
 
     # Collision detection with maze
-    if maze_mask.overlap(pac_mask, (x - ((screen_width / 2) - (maze.get_width() / 2)), y)):
-        if dir == "left":
-            x += 5
-        if dir == "right":
-            x -= 5
-        if dir == "up":
-            y += 5
-        if dir == "down":
-            y -= 5
-        if dir == "top_left":
-            x += 5
-            y += 5
-        if dir == "top_right":
-            x -= 5
-            y += 5
-        if dir == "bottom_left":
-            x += 5
-            y -= 5
-        if dir == "bottom_right":
-            x -= 5
-            y -= 5
+    for cell in cells:
+        if isinstance(cell, wall):
+            if pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
+                if dir == "left":
+                    while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
+                        x += 1
+                elif dir == "right":
+                    while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
+                        x -= 1
+                elif dir == "up":
+                    while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
+                        y += 1
+                elif dir == "down":
+                    while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
+                        y -= 1
 
     return x, y, dir
 
 
 
 #game loop
+clock = pygame.time.Clock()
 run = True
 while run:
+    clock.tick(60)  # Limit to 60 FPS
+
+    # Event handler (move this to the top of the loop)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+
     screen.fill(BLACK)
+    key = pygame.key.get_pressed()
 
-    coins = []
-    for coin in coin_positions:
-        coins.append(dot(coin))
-
-    # Re-defining sprites and masks for movement and animation
-    player = pac_sheet.get_image(0, 219.3333, 196, 0.2, BLACK)
+    # Only update player sprite once per frame
+    player = pac_sheet.get_image(pac_sheet.animate(0, 3, 250), 219.3333, 196, (cell_size - 1), BLACK)
     pac_mask = pygame.mask.from_surface(player)
-    player = pac_sheet.get_image(pac_sheet.animate(0, 3, 250), 219.3333, 196, 0.2, BLACK)
+    for cell in cells:
+        if isinstance(cell, dot):
+            cell.image = coin_sheet.get_image(coin_sheet.animate(0, 6, 250), 133.5, 118, cell_size, BLACK)
+            cell.mask = pygame.mask.from_surface(coin_sheet.get_image(coin_sheet.animate(0, 6, 250), 133.5, 118, cell_size, BLACK))
 
-    # Handle movement
-    x, y, dir = handle_movement(x, y, dir, player, screen_width, screen_height)
+    # Pass key to handle_movement
+    x, y, dir = handle_movement(x, y, dir, player, screen_width, screen_height, key)
 
     # Orientation
     if dir == "left":
@@ -145,39 +158,26 @@ while run:
         player = pygame.transform.rotate(player, 90)
     elif dir == "down":
         player = pygame.transform.rotate(player, -90)
-    elif dir == "top_left":
-        player = pygame.transform.rotate(player, 135)
-    elif dir == "top_right":
-        player = pygame.transform.rotate(player, 45)
-    elif dir == "bottom_left":
-        player = pygame.transform.rotate(player, 225)
-    elif dir == "bottom_right":
-        player = pygame.transform.rotate(player, 315)
 
     pac_mask = pygame.mask.from_surface(player)
 
-    #bliting everything onto the screen
     screen.blit(player, (x, y))
-    for coin in coins:
-        screen.blit(coin.image, coin.pos)
-    
-    screen.blit(maze, (((screen_width / 2) - (maze.get_width() / 2)), 0))
+    for cell in cells:
+        screen.blit(cell.image, cell.pos)
 
-    # Collision detection with coin
-    for coin in coins:
-        if pac_mask.overlap(coin.mask, (coin.pos[0] - x, coin.pos[1] - y)):
-            coin_pos = randint(0, screen_width - coin.size[0]), randint(0, screen_height - coin.size[1])
-            coin_positions[coins.index(coin)] = coin_pos
-            score += 1
+    # Collision detection with coin (iterate over a copy to avoid issues)
+    for cell in cells[:]:
+        if isinstance(cell, dot):
+            if pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
+                cells.remove(cell)
+                score += 1
 
     # Score display
     draw_text(str(score), my_font, (255, 255, 255), 10, 10, 2)
 
     #time display
-    draw_text(str(pygame.time.get_ticks()//1000), my_font, (255, 255, 255), screen_width - 150, 10, 2)
+    draw_text(str(60 - pygame.time.get_ticks()//1000), my_font, (255, 255, 255), screen_width - 150, 10, 2)
 
-    # Event handler
-    key = pygame.key.get_pressed()
     if key[pygame.K_ESCAPE]:
         run = False
     if pygame.time.get_ticks()//1000 >= 60:
@@ -187,10 +187,6 @@ while run:
         draw_text("Final Score: " + str(score), my_font, (255, 255, 255), screen_width/2 - 200, screen_height/2 + 50, 2)
         pygame.display.update()
         pygame.time.delay(5000)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-
 
     pygame.display.update()
     
