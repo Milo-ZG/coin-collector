@@ -8,8 +8,8 @@ screen_width, screen_height = pygame.display.get_desktop_sizes()[0]
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Coin Collector")
 score = 0
-cell_size = int(screen_width // 10)
-cell_size = int((screen_width - (cell_size // 2)) // 10)
+cell_size = int(screen_height // 19)
+cell_size = int((screen_height - (cell_size // 2)) // 19)
 dir = "left"
 x = screen_width/2
 y = screen_height/2
@@ -39,12 +39,28 @@ cells = []
 cell_x = cell_size // 2
 cell_y = cell_size // 2
 
-map =  [['W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W'], \
-        ['W', ' ', ' ', 'C', 'C', 'C', ' ', ' ', 'P', 'W'], \
-        ['W', ' ', 'W', 'W', 'W', 'W', 'W', ' ', 'W', 'W'], \
-        ['W', ' ', 'C', 'C', ' ', ' ', 'W', 'C', 'W', 'W'], \
-        ['W', ' ', 'W', 'W', 'W', ' ', 'W', 'C', 'C', 'W'], \
-        ['W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W', 'W']]
+map =  [
+    ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],
+    ['W','C','C','C','C','C','C','W','C','C','C','W','C','C','C','C','C','C','W'],
+    ['W','C','W','W','W','C','W','W','W','C','W','W','W','C','W','W','W','C','W'],
+    ['W','C','W',' ','W','C','C','C','C','C','C','C','C','C','W',' ','W','C','W'],
+    ['W','C','W','W','W','C','W','W','W',' ','W','W','W','C','W','W','W','C','W'],
+    ['W','C','C','C','C','C','W',' ','W',' ','W',' ','W','C','C','C','C','C','W'],
+    ['W','C','W','W','W','C','W',' ','W','W','W',' ','W','C','W','W','W','C','W'],
+    ['W','C','W',' ','W','C','C','C','C','C','C','C','C','C','W',' ','W','C','W'],
+    ['W','C','W','W','W','W','W','W','W',' ','W','W','W','W','W','W','W','C','W'],
+    ['W','C','C','C','C','C','C','W',' ',' ',' ','W','C','C','C','C','C','C','W'],
+    ['W','W','W','W','W','W','C','W','W','W','W','W','C','W','W','W','W','W','W'],
+    [' ',' ',' ',' ','W','C','C','C','C','P','C','C','C','C','W',' ',' ',' ',' '],
+    ['W','W','W','W','W','C','W','W','W','W','W','W','W','C','W','W','W','W','W'],
+    ['W','C','C','C','C','C','W',' ',' ',' ',' ',' ','W','C','C','C','C','C','W'],
+    ['W','C','W','W','W','W','W','W','W',' ','W','W','W','W','W','W','W','C','W'],
+    ['W','C','W',' ','W','C','C','C','C','C','C','C','C','C','W',' ','W','C','W'],
+    ['W','C','W','W','W','C','W','W','W',' ','W','W','W','C','W','W','W','C','W'],
+    ['W','C','C','C','C','C','W',' ','W',' ','W',' ','W','C','C','C','C','C','W'],
+    ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],
+]
+
 
 for row in map:
     for cell in row:
