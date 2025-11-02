@@ -1,5 +1,6 @@
 import pygame
 import sprite_sheet
+from math import floor
 from random import randint
 pygame.init()
 
@@ -9,8 +10,9 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Coin Collector")
 score = 0
 cell_size = int(screen_height // 19)
-cell_size = int((screen_height - (cell_size // 2)) // 19)
-dir = "left"
+cell_size = 5 * floor(cell_size/5)
+xv = 0
+yv = 0
 x = screen_width/2
 y = screen_height/2
 BLACK = (0, 0, 0)
@@ -24,7 +26,7 @@ class dot:
     def __init__(self, pos):
         self.pos = pos
         self.image = coin_sheet.get_image(coin_sheet.animate(0, 6, 250), 133.5, 118, cell_size, BLACK)
-        self.mask = pygame.mask.from_surface(coin_sheet.get_image(coin_sheet.animate(0, 6, 250), 133.5, 118, cell_size, BLACK))
+        self.rect = self.image.get_rect(topleft=pos)
         self.size = self.image.get_size()
 
 class wall:
@@ -32,7 +34,7 @@ class wall:
         self.pos = pos
         self.image = pygame.Surface(size)
         self.image.fill((0, 0, 255))
-        self.mask = pygame.mask.from_surface(self.image)
+        self.rect = self.image.get_rect(topleft=pos)
         self.size = self.image.get_size()
 
 cells = []
@@ -91,52 +93,55 @@ def draw_text(text, font, text_col, x, y, scale):
 #defining sprites and masks
 
 
-player = pac_sheet.get_image(pac_sheet.animate(0, 3, 100), 219.3333, 196, (cell_size - 2), BLACK)
-pac_mask = pygame.mask.from_surface(player)
+player = pac_sheet.get_image(pac_sheet.animate(0, 3, 100), 219.3333, 196, (cell_size - 4), BLACK)
     
-def handle_movement(x, y, dir, player, screen_width, screen_height, key):
-    # Movement and direction
+def handle_movement(x, y, xv, yv, player, screen_width, screen_height, key):
+    speed = 5
+    # update velocity only when a key is pressed (keep previous direction otherwise)
     if key[pygame.K_a] or key[pygame.K_LEFT]:
-        dir = "left"
-        x -= 5
+        xv, yv = -speed, 0
     elif key[pygame.K_d] or key[pygame.K_RIGHT]:
-        dir = "right"
-        x += 5
+        xv, yv = speed, 0
     elif key[pygame.K_w] or key[pygame.K_UP]:
-        dir = "up"
-        y -= 5
+        xv, yv = 0, -speed
     elif key[pygame.K_s] or key[pygame.K_DOWN]:
-        dir = "down"
-        y += 5
+        xv, yv = 0, speed
 
-    # Border fencing
-    if x > screen_width - player.get_size()[0]:
-        x = screen_width - player.get_size()[0]
-    if x < 0:
-        x = 0
-    if y > screen_height - player.get_size()[1]:
-        y = screen_height - player.get_size()[1]
-    if y < 0:
-        y = 0
-
-    # Collision detection with maze
+    # horizontal movement + collision
+    x += xv
+    player_rect = player.get_rect(topleft=(x, y))
     for cell in cells:
         if isinstance(cell, wall):
-            if pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
-                if dir == "left":
-                    while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
-                        x += 1
-                elif dir == "right":
-                    while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
-                        x -= 1
-                elif dir == "up":
-                    while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
-                        y += 1
-                elif dir == "down":
-                    while pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
-                        y -= 1
+            if player_rect.colliderect(cell.rect):
+                x -= xv
+                xv = 0
+                break
 
-    return x, y, dir
+    # vertical movement + collision
+    y += yv
+    player_rect = player.get_rect(topleft=(x, y))
+    for cell in cells:
+        if isinstance(cell, wall):
+            if player_rect.colliderect(cell.rect):
+                y -= yv
+                yv = 0
+                break
+
+    # screen bounds
+    if x > screen_width - player.get_size()[0]:
+        x = screen_width - player.get_size()[0]
+        xv = 0
+    if x < 0:
+        x = 0
+        xv = 0
+    if y > screen_height - player.get_size()[1]:
+        y = screen_height - player.get_size()[1]
+        yv = 0
+    if y < 0:
+        y = 0
+        yv = 0
+
+    return x, y, xv, yv
 
 
 
@@ -156,26 +161,27 @@ while run:
 
     # Only update player sprite once per frame
     player = pac_sheet.get_image(pac_sheet.animate(0, 3, 250), 219.3333, 196, (cell_size - 1), BLACK)
-    pac_mask = pygame.mask.from_surface(player)
+    # update coin images and rects
     for cell in cells:
         if isinstance(cell, dot):
             cell.image = coin_sheet.get_image(coin_sheet.animate(0, 6, 250), 133.5, 118, cell_size, BLACK)
-            cell.mask = pygame.mask.from_surface(coin_sheet.get_image(coin_sheet.animate(0, 6, 250), 133.5, 118, cell_size, BLACK))
+            cell.rect = cell.image.get_rect(topleft=cell.pos)
 
-    # Pass key to handle_movement
-    x, y, dir = handle_movement(x, y, dir, player, screen_width, screen_height, key)
+    # Pass key to handle_movement (no mask)
+    x, y, xv, yv = handle_movement(x, y, xv, yv, player, screen_width, screen_height, key)
 
     # Orientation
-    if dir == "left":
+    if xv < 0 and yv == 0:
         player = pygame.transform.flip(player, True, False)
-    elif dir == "right":
+    elif xv > 0 and yv == 0:
         player = pygame.transform.rotate(player, 0)
-    elif dir == "up":
+    elif yv < 0 and xv == 0:
         player = pygame.transform.rotate(player, 90)
-    elif dir == "down":
+    elif yv > 0 and xv == 0:
         player = pygame.transform.rotate(player, -90)
 
-    pac_mask = pygame.mask.from_surface(player)
+    # build player rect once for collision checks
+    player_rect = player.get_rect(topleft=(x, y))
 
     screen.blit(player, (x, y))
     for cell in cells:
@@ -184,7 +190,7 @@ while run:
     # Collision detection with coin (iterate over a copy to avoid issues)
     for cell in cells[:]:
         if isinstance(cell, dot):
-            if pac_mask.overlap(cell.mask, (cell.pos[0] - x, cell.pos[1] - y)):
+            if player_rect.colliderect(cell.rect):
                 cells.remove(cell)
                 score += 1
 
