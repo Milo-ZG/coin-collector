@@ -1,7 +1,6 @@
 import pygame
 import sprite_sheet
 from math import floor
-from random import randint
 pygame.init()
 
 # variable definitions
@@ -231,6 +230,13 @@ while run:
         screen.fill(BLACK)
         draw_text("Time's Up!", my_font, (255, 255, 255), screen_width/2 - 150, screen_height/2 - 50, 2)
         draw_text("Final Score: " + str(score), my_font, (255, 255, 255), screen_width/2 - 200, screen_height/2 + 50, 2)
+        pygame.display.update()
+        pygame.time.delay(5000)
+
+    if score >= 123:
+        run = False
+        screen.fill(BLACK)
+        draw_text("You win!", my_font, (0, 255, 0), screen_width/2 - 150, screen_height/2 - 50, 2)
         pygame.display.update()
         pygame.time.delay(5000)
 
