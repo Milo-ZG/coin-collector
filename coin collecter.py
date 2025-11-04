@@ -237,7 +237,7 @@ while run:
         run = False
         screen.fill(BLACK)
         draw_text("You win!", my_font, (0, 255, 0), screen_width/2 - 150, screen_height/2 - 50, 2)
-        draw_text("Your time was: " + str(pygame.time.get_ticks()//1000) + " seconds", my_font, (0, 255, 0), screen_width/2 - 450, screen_height/2 + 50, 2)
+        draw_text("Your time was: " + str(pygame.time.get_ticks()//1000) + " seconds", my_font, (0, 255, 0), screen_width/2 - 250, screen_height/2 + 50, 2)
         pygame.display.update()
         pygame.time.delay(5000)
 
