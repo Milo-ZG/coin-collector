@@ -65,4 +65,13 @@ def handle_movement(x, y, xv, yv, desired_xv, desired_yv, player, cells, wall, s
         y = 0
         yv = 0
 
-    return x, y, xv, yv, desired_xv, desired_yv
+    if xv < 0 and yv == 0:
+        player = pygame.transform.flip(player, True, False)
+    elif xv > 0 and yv == 0:
+        player = pygame.transform.rotate(player, 0)
+    elif yv < 0 and xv == 0:
+        player = pygame.transform.rotate(player, 90)
+    elif yv > 0 and xv == 0:
+        player = pygame.transform.rotate(player, -90)
+
+    return x, y, xv, yv, desired_xv, desired_yv, player

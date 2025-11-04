@@ -120,20 +120,9 @@ while run:
             cell.image = coin_sheet.get_image(coin_sheet.animate(0, 6, 250), 133.5, 118, cell_size, BLACK)
             cell.rect = cell.image.get_rect(topleft=cell.pos)
 
-    # Pass key to handle_movement (no mask). We also pass and receive the queued desired velocities
-    x, y, xv, yv, desired_xv, desired_yv = handle_movement(
+    x, y, xv, yv, desired_xv, desired_yv, player = handle_movement(
         x, y, xv, yv, desired_xv, desired_yv, player, cells, wall, screen_width, screen_height, key
     )
-
-    # Orientation
-    if xv < 0 and yv == 0:
-        player = pygame.transform.flip(player, True, False)
-    elif xv > 0 and yv == 0:
-        player = pygame.transform.rotate(player, 0)
-    elif yv < 0 and xv == 0:
-        player = pygame.transform.rotate(player, 90)
-    elif yv > 0 and xv == 0:
-        player = pygame.transform.rotate(player, -90)
 
     # build player rect once for collision checks
     player_rect = player.get_rect(topleft=(x, y))
@@ -169,7 +158,7 @@ while run:
         run = False
         screen.fill(BLACK)
         draw_text("You win!", my_font, (0, 255, 0), screen_width/2 - 150, screen_height/2 - 50, 2)
-        draw_text("Your time was: " + str(pygame.time.get_ticks()//1000) + " seconds", my_font, (0, 255, 0), screen_width/2 - 250, screen_height/2 + 50, 2)
+        draw_text("Your time was: " + str(pygame.time.get_ticks()//1000) + " seconds", my_font, (0, 255, 0), screen_width/2 - 450, screen_height/2 + 50, 2)
         pygame.display.update()
         pygame.time.delay(5000)
 
